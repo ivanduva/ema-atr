@@ -1,0 +1,25 @@
+{
+  "name": "atr",
+  "version": "0.0.0",
+  "authors": [
+    "RodrigoJacznik <jacznik.rodrigo@gmail.com>"
+  ],
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "bootstrap": "~3.3.2",
+    "epoch": "~0.6.0",
+    "socket.io": "~1.3.4",
+    "d3": "~3.5.5"
+  },
+  "resolutions": {
+    "socket.io-client-fixed": "0.9.16"
+  }
+}
