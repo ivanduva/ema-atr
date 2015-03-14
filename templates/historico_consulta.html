@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h1>Consulta Historica</h1>
+  <form action="" method="post" name="historico">
+    {{ form.hidden_tag() }}
+    <p>
+      Timestamp inicio: <br>
+      {{ form.tm_inicio }} <br>
+    </p>
+    <p>
+      Timestamp fin: <br>
+      {{ form.tm_fin }} <br>
+    </p>
+    <p><input type="submit" value="Consultar"></input></p>
+  </form>
+{% endblock %}
