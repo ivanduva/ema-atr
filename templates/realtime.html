@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %} EMA Realtime {% endblock %}
+{% block script %}
+    <script src="{{ url_for('static', filename='bower_components/jquery/dist/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='bower_components/socket.io-client-fixed/dist/socket.io.js') }}"></script>
+
+    <script src="{{ url_for('static', filename='bower_components/d3/d3.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='bower_components/epoch/epoch.min.js') }}"></script>
+{% endblock %}
+{% block css %}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='bower_components/epoch/epoch.min.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='bower_components/bootstrap/dist/css/bootstrap.min.css') }}">
+{% endblock %}
+{% block content %}
+    <div class="container">
+      <div class="col-md-6">
+        <h4>Temperatura C°</h4>
+        <div id="area_temp" class="epoch" style="height: 260px;"></div>
+      </div>
+      <div class="col-md-6">
+        <h4>Humedad %</h4>
+        <div id="area_hume" class="epoch" style="height: 260px;"></div>
+      </div>
+      <div class="col-md-12">
+        <h4>Presion hPa</h4>
+        <div id="area_presion" class="epoch category20c" style="height: 260px;"></div>
+      </div>
+    </div>
+    <script type="text/javascript" charset="utf-8">
+        $(document).ready(function(){
+
+            var data_temp = [
+              { label: 'Temperatura', values: [{time: Date.now()/1000, y: 20}]}
+            ];
+
+            var temperatura = $('#area_temp').epoch({
+              type: 'time.line',
+              data: data_temp,
+              axes: ['left', 'right', 'bottom'],
+            });
+            
+            var data_hume = [
+              { label: 'Humedad', values: [{time: Date.now()/1000, y: 20}] },
+            ];
+
+            var humedad = $('#area_hume').epoch({
+              type: 'time.line',
+              data: data_hume,
+              axes: ['left', 'right', 'bottom'],
+            });
+
+            var data_presion = [
+              { label: 'Presion',  values: [{time: Date.now()/1000, y: 1000}]},
+            ];
+
+            var presion = $('#area_presion').epoch({
+              type: 'time.line',
+              data: data_presion,
+              axes: ['left', 'right', 'bottom'],
+              tickFormats: {left: function (d) { return d; }},
+            });
+
+            var socket = io.connect('http://' + document.domain + ':' + location.port + '/test');
+
+            socket.on('connect', function() {
+                socket.emit('my event', {data: 'I\'m connected!'});
+            });
+
+            socket.on('EMA data', function(msg) {
+                temperatura.push([{'time': msg.time, 'y': msg.temperatura}]);
+                presion.push([{'time': msg.time, 'y': msg.presion}]);
+                humedad.push([{'time': msg.time, 'y': msg.humedad}]);  
+            });
+          
+        });
+    </script>
+{% endblock %}
