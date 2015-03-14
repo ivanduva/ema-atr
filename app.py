@@ -7,12 +7,19 @@ import time
 import random
 import serial
 from threading import Thread
-from flask import Flask, render_template
+
+from pymongo import MongoClient
+from flask import Flask, render_template, redirect, url_for, jsonify
 from flask.ext.socketio import SocketIO, emit
 
+from forms import HistoricoForm
+
+client = MongoClient()
+db = client['EMA']
+
 app = Flask(__name__)
+app.config.from_object('config')
 app.debug = True
-app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app)
 thread = None
 
@@ -36,24 +43,59 @@ def background_thread():
 
     while True:
         data = serial.readline().strip()
-        
+       
         tm = time.time()
         if (data and data != 'fail'):
             data = data.split(',')
-            print(data)
-            socketio.emit('EMA data',
-                        {'time': tm, 'temperatura': data[0], 'humedad': data[1],
-                            'presion': data[2]}, namespace='/test')
+            captura = {'time': tm, 'temperatura': data[0], 'humedad': data[1],
+                            'presion': data[2]}
+            socketio.emit('EMA data', captura, namespace='/test')
+            db.captura_EMA.insert(captura)
         time.sleep(2)
 
 
 @app.route('/')
 def index():
+    return render_template('index.html')
+
+@app.route('/realtime')
+def realtime():
     global thread
     if thread is None:
         thread = Thread(target=background_thread)
         thread.start()
-    return render_template('index.html')
+    return render_template('realtime.html')
+
+@app.route('/historico', methods=['GET', 'POST'])
+def historico():
+    form = HistoricoForm()
+    if form.validate_on_submit():
+        url = url_for('historico_consulta', tm_inicio=str(form.tm_inicio.data),
+                tm_fin=str(form.tm_fin.data))
+        return redirect(url)
+    return render_template('historico_consulta.html', form=form)
+
+
+@app.route('/historico/<float:tm_inicio>/<float:tm_fin>')
+def historico_consulta(tm_inicio, tm_fin):
+    data = {"data": list(db.captura_EMA.find({'$and': [{'time': {'$gte': tm_inicio}},
+        {'time': {'$lte': tm_fin}}]}, {'_id': 0}))}
+    
+    t = {"tm": [], "data": []}
+    p = {"tm": [], "data": []}
+    h = {"tm": [], "data": []}
+
+    for d in data['data']:
+        t['tm'].append(d['time'])
+        p['tm'].append(d['time'])
+        p['tm'].append(d['time'])
+ 
+        t['data'].append(d['temperatura'])
+        p['data'].append(d['presion'])
+        h['data'].append(d['humedad'])
+
+    return render_template('historico.html', data=data)
+
 
 
 @socketio.on('connect', namespace='/test')
