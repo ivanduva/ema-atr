@@ -1,8 +1,7 @@
 from flask.ext.wtf import Form
-from wtforms import StringField
-from wtforms.validators import DataRequired
+from wtforms import HiddenField, validators, TextField
 
 
 class HistoricoForm(Form):
-    tm_inicio = StringField('TimeStamp inicio')
-    tm_fin = StringField('TimeStamp fin')
+    tm_inicio = TextField('TimeStamp inicio', [validators.Required()])
+    tm_fin = TextField('TimeStamp fin', [validators.Required()])
