@@ -73,21 +73,26 @@ def realtime():
 def historico():
     form = HistoricoForm()
     if form.validate_on_submit():
-        url = url_for('historico_consulta', tm_inicio=str(form.tm_inicio.data),
-                tm_fin=str(form.tm_fin.data))
+        print(form.tm_fin.data, form.tm_inicio.data)
+        url = url_for('historico_consulta', tm_inicio=form.tm_inicio.data,
+                tm_fin=form.tm_fin.data)
         return redirect(url)
     return render_template('historico_consulta.html', form=form)
 
 
 @app.route('/historico/<float:tm_inicio>/<float:tm_fin>')
 def historico_consulta(tm_inicio, tm_fin):
-    tm_inicio = datetime.utcfromtimestamp(tm_inicio)
-    tm_fin = datetime.utcfromtimestamp(tm_fin)
+    print(tm_inicio, tm_fin)
+    tm_inicio = datetime.fromtimestamp(tm_inicio)
+    tm_fin = datetime.fromtimestamp(tm_fin)
 
+    print(tm_inicio, tm_fin)
     temp = DataType.query_interval('Temperatura', tm_inicio, tm_fin)
     pre = DataType.query_interval('Presion', tm_inicio, tm_fin)
     hume = DataType.query_interval('Humedad', tm_inicio, tm_fin)
- 
+
+    if temp is None or pre is None or hume is None:
+        return redirect('historico')
     return render_template('historico.html', temp=temp, hume=hume, pre=pre)
 
 
