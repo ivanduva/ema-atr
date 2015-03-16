@@ -1,17 +1,73 @@
 {% extends "base.html" %}
 
+{% block script %}
+  <script src="{{ url_for('static',
+      filename='bower_components/moment/min/moment.min.js') }}"></script>
+  <script src="{{ url_for('static',
+      filename='bower_components/eonasdan-bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js') }}"></script>
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('static',
+    filename='bower_components/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.min.css') }}" />
+{% endblock %}
+
 {% block content %}
   <h1>Consulta Historica</h1>
   <form action="" method="post" name="historico">
     {{ form.hidden_tag() }}
-    <p>
-      Timestamp inicio: <br>
-      {{ form.tm_inicio }} <br>
-    </p>
-    <p>
-      Timestamp fin: <br>
-      {{ form.tm_fin }} <br>
-    </p>
+
+    {{ form.tm_inicio }}
+    {{ form.tm_fin }}
+	
+        <div class="container">
+          <div class="col-sm-6">
+            <h3>Timestamp Inicio</h3>
+            <div class="form-group">
+              <div class="row">
+                <div class="col-md-9">
+                  <div id="datetimepickerinicio"></div>
+                </div>
+              </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+          <h3>Timestamp Fin</h3>
+            <div class="form-group">
+              <div class="row">
+                <div class="col-md-9">
+                  <div id="datetimepickerfin"></div>
+                </div>
+              </div>
+            </div>
+        </div>
+    </div>
+
     <p><input type="submit" value="Consultar"></input></p>
-  </form>
+</form>
+
+    <script type="text/javascript">
+        $(function () {
+            $('#datetimepickerinicio').datetimepicker({
+                inline: true,
+                sideBySide: true,
+                format: 'YYYY-MM-DD HH:mm:ss'
+            });
+            $('#datetimepickerfin').datetimepicker({
+                inline: true,
+                sideBySide: true,
+                format: 'AMDLTS'
+            });
+            $('#datetimepickerinicio').on('dp.change', function(e) {
+              var d = $('#datetimepickerinicio').data('DateTimePicker').date();
+              $('#tm_inicio').val((new Date(d)).getTime() / 1000);
+            });
+            $('#datetimepickerfin').on('dp.change', function(e) {
+              var d = $('#datetimepickerfin').data('DateTimePicker').date();
+              $('#tm_fin').val((new Date(d)).getTime() / 1000);
+            });
+
+        });
+    </script>
+
 {% endblock %}
