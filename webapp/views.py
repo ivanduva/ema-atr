@@ -12,8 +12,13 @@ from flask import render_template, redirect, url_for, json
 from models import DataType, Data
 from forms import HistoricoForm
 
-thread = None
+from consumer import *
+from socket_wrapp import Socket
+from protocol import * #usar pyClients
 
+
+thread = None
+cons=Consumidor(Socket())
 
 class ArduinoMock():
 
@@ -31,7 +36,7 @@ class Arduino():
 
 def background_thread():
     serial = ArduinoMock()
-
+    #serial = Arduino('/dev/ttyACM0', 9600)
     temp = DataType.get_or_create('Temperatura', 'float')
     hume = DataType.get_or_create('Humedad', 'int')
     pre = DataType.get_or_create('Presion', 'int')
@@ -73,28 +78,51 @@ def realtime():
 def historico():
     form = HistoricoForm()
     if form.validate_on_submit():
-        print(form.tm_fin.data, form.tm_inicio.data)
-        url = url_for('historico_consulta', tm_inicio=form.tm_inicio.data,
-                tm_fin=form.tm_fin.data)
+        url = url_for('historico_consulta', tm_inicio=str(form.tm_inicio.data),
+                tm_fin=str(form.tm_fin.data))
         return redirect(url)
     return render_template('historico_consulta.html', form=form)
 
 
 @app.route('/historico/<float:tm_inicio>/<float:tm_fin>')
 def historico_consulta(tm_inicio, tm_fin):
-    print(tm_inicio, tm_fin)
-    tm_inicio = datetime.fromtimestamp(tm_inicio)
-    tm_fin = datetime.fromtimestamp(tm_fin)
+    tm_inicio = datetime.utcfromtimestamp(tm_inicio)
+    tm_fin = datetime.utcfromtimestamp(tm_fin)
 
-    print(tm_inicio, tm_fin)
     temp = DataType.query_interval('Temperatura', tm_inicio, tm_fin)
     pre = DataType.query_interval('Presion', tm_inicio, tm_fin)
     hume = DataType.query_interval('Humedad', tm_inicio, tm_fin)
 
-    if temp is None or pre is None or hume is None:
-        return redirect('historico')
+ 
     return render_template('historico.html', temp=temp, hume=hume, pre=pre)
 
+@app.route('/fuentesds')
+def fuentesDS():
+    
+   # cons = Consumidor(Socket()): EN APP
+    cons.connect_server("127.0.0.1",8888)
+    sources2=[]  
+    sources = [" ".join(data.split(',')) for data in cons.request_sources()]
+    
+    return render_template('fuentesds.html',fuentes=sources,cantidad=len(sources))
+
+@app.route('/fuentesds/<idFuente>')
+def fuentesds_id(idFuente):
+    print(idFuente)
+    datos=[] 
+    i=0
+     
+    if (cons.select_source(idFuente)):
+        for dato in cons.start_stream(GET_OP_NORMAL,1):
+            i=i+1
+            dato=dato.split(';')            
+            datos.append(("{x:"+dato[0]+",y:"+dato[1]+"}").strip("'"))
+            
+        datos=str(datos) 
+        print(datos)                        
+        return render_template('rtds.html',id =idFuente,datos=datos)
+    else:
+        return ("FUENTE INEXISTENTE") #Crear Pagina de ERROR
 
 
 @socketio.on('connect', namespace='/test')

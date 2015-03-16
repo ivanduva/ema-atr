@@ -1,5 +1,38 @@
 {% extends "base.html" %}  
+{% block title %} EMA - HOME! {% endblock %}
 {% block content %}
-<a href="{{ url_for('realtime') }}">Consulta en tiempo real</a> <br>
-<a href="{{ url_for('historico') }}">Consulta historica</a>
+<div class="container">
+	
+	<h1>Servidor Estación Metereológica Automática</h1>
+	<div class="jumbotron">
+    	<h3>Servidor Estación Metereológica Automática y Cliente DataStreaming</h3>
+    	<p>Realizado para Aplicaciones en Tiempo Real, UTN FRLP, Marzo 2015.</p> 
+  </div>
+	
+	
+	<div class="row" >
+		 <div class="col-sm-4">
+			<form action="{{ url_for('historico') }}">
+					<input type="submit" class="btn btn-default btn-lg" value="Consulta Histórica" ><span class="glyphicon glyphicon-floppy-disk"></span> </input>
+			</form>
+		</div>
+
+		<div class="col-sm-4">
+
+			<form action="{{ url_for('realtime') }}">
+				<input type="submit" class="btn btn-default btn-lg" value="Consulta En RT" ><span class="glyphicon glyphicon-time"></span> </input>
+			</form>
+		</div>
+		<div class="col-sm-4">
+			<form action="{{url_for('fuentesDS') }}">
+				<input type="submit" class="btn btn-default btn-lg" value="Consulta Servidor DataStreaming"><span class="glyphicon glyphicon-time"></span> </input>
+			</form>
+		</div>
+
+	</div>
+
+
+
+
+</div>
 {% endblock %}
