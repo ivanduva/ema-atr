@@ -19,9 +19,10 @@ class DataType(db.Document):
 
     @staticmethod
     def query_interval(name, tm_inicio, tm_fin):
-        datatype = DataType.objects(name=name)
+        datatype = DataType.objects(name=name).exclude('id')
         if datatype is not None:
-            datatype = datatype.filter(data__timestamp__gte=tm_inicio).filter(data__timestamp__lte=tm_fin).get()
+            datatype = datatype.filter(data__timestamp__gte=tm_inicio).filter(data__timestamp__lte=tm_fin).first()
+            datatype.data = [d.to_json() for d in datatype.data]
             return datatype
         return None
 
@@ -30,3 +31,5 @@ class Data(db.EmbeddedDocument):
     timestamp = db.DateTimeField(required=True)
     value = db.StringField(required=True)
 
+    def to_json(self):
+        return '{' + "'x': {}, 'y': {}".format(self.timestamp, self.value) + '}'

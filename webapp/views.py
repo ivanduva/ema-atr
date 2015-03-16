@@ -84,13 +84,11 @@ def historico_consulta(tm_inicio, tm_fin):
     tm_inicio = datetime.utcfromtimestamp(tm_inicio)
     tm_fin = datetime.utcfromtimestamp(tm_fin)
 
-    print(tm_inicio)
-    print(tm_fin)
     temp = DataType.query_interval('Temperatura', tm_inicio, tm_fin)
     pre = DataType.query_interval('Presion', tm_inicio, tm_fin)
     hume = DataType.query_interval('Humedad', tm_inicio, tm_fin)
-    
-    return render_template('historico.html', temp=json.dumps(temp), hume=hume, pre=pre)
+ 
+    return render_template('historico.html', temp=temp, hume=hume, pre=pre)
 
 
 
