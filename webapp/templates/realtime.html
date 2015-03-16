@@ -29,28 +29,34 @@
     <script type="text/javascript" charset="utf-8">
         $(document).ready(function(){
 
+            var format_date = function(d) {
+              return new Date(d).toLocaleString();
+            }
+
             var data_temp = [
-              { label: 'Temperatura', values: [{time: Date.now()/1000, y: 20}]}
+              { label: 'Temperatura', values: [{time: new Date(), y: 20}]}
             ];
 
             var temperatura = $('#area_temp').epoch({
               type: 'time.line',
               data: data_temp,
               axes: ['left', 'right', 'bottom'],
+              tickFormats: {bottom: function(d) { return format_date(d); }}
             });
             
             var data_hume = [
-              { label: 'Humedad', values: [{time: Date.now()/1000, y: 20}] },
+              { label: 'Humedad', values: [{time: new Date(), y: 20}] },
             ];
 
             var humedad = $('#area_hume').epoch({
               type: 'time.line',
               data: data_hume,
               axes: ['left', 'right', 'bottom'],
+              tickFormats: {bottom: function(d) { return format_date(d); }}
             });
 
             var data_presion = [
-              { label: 'Presion',  values: [{time: Date.now()/1000, y: 1000}]},
+              { label: 'Presion',  values: [{time: new Date(), y: 1000}]},
             ];
 
             var presion = $('#area_presion').epoch({
@@ -58,6 +64,7 @@
               data: data_presion,
               axes: ['left', 'right', 'bottom'],
               tickFormats: {left: function (d) { return d; }},
+              tickFormats: {bottom: function(d) { return format_date(d); }}
             });
 
             var socket = io.connect('http://' + document.domain + ':' + location.port + '/test');
