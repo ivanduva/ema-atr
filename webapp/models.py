@@ -1,5 +1,5 @@
 from webapp import db
-
+import time
 
 class DataType(db.Document):
     name = db.StringField(max_length=255, required=True)
@@ -19,10 +19,9 @@ class DataType(db.Document):
 
     @staticmethod
     def query_interval(name, tm_inicio, tm_fin):
-        datatype = DataType.objects(name=name).exclude('id')
+        datatype = DataType.objects(name=name).exclude('id').filter(data__timestamp__gte=tm_inicio).filter(data__timestamp__lte=tm_fin).first()
         if datatype is not None:
-            datatype = datatype.filter(data__timestamp__gte=tm_inicio).filter(data__timestamp__lte=tm_fin).first()
-            datatype.data = [d.to_json() for d in datatype.data]
+            datatype.data = [d.to_dict() for d in datatype.data][::50]
             return datatype
         return None
 
@@ -31,5 +30,5 @@ class Data(db.EmbeddedDocument):
     timestamp = db.DateTimeField(required=True)
     value = db.StringField(required=True)
 
-    def to_json(self):
-        return '{' + "'x': {}, 'y': {}".format(self.timestamp, self.value) + '}'
+    def to_dict(self):
+        return {"x": time.mktime(self.timestamp.timetuple()), "y": float(self.value)}
